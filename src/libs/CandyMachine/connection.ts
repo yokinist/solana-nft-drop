@@ -1,14 +1,30 @@
-// @ts-nocheck
+import { web3 } from '@project-serum/anchor';
 import { WalletNotConnectedError } from '@solana/wallet-adapter-base';
-import { Transaction } from '@solana/web3.js';
+import {
+  Blockhash,
+  Commitment,
+  Connection,
+  FeeCalculator,
+  Keypair,
+  SignatureStatus,
+  Transaction,
+  TransactionInstruction,
+} from '@solana/web3.js';
 
-export const getErrorForTransaction = async (connection, txid) => {
+type BlockhashAndFeeCalculator = {
+  blockhash: Blockhash;
+  feeCalculator: FeeCalculator;
+};
+
+type SequenceType = 'SequentialParallel' | 'Parallel' | 'StopOnFailure';
+
+export const getErrorForTransaction = async (connection: web3.Connection, txid: string) => {
   // wait for all confirmation before geting transaction
   await connection.confirmTransaction(txid, 'max');
 
   const tx = await connection.getParsedConfirmedTransaction(txid);
 
-  const errors = [];
+  const errors: { [key: number]: string }[] = [];
   if (tx?.meta && tx.meta.logMessages) {
     tx.meta.logMessages.forEach((log) => {
       const regex = /Error: (.*)/gm;
@@ -29,11 +45,16 @@ export const getErrorForTransaction = async (connection, txid) => {
   return errors;
 };
 
-export async function sendTransactionsWithManualRetry(connection, wallet, instructions, signers) {
+export async function sendTransactionsWithManualRetry(
+  connection: web3.Connection,
+  wallet: any,
+  instructions: TransactionInstruction[][],
+  signers: Keypair[][],
+) {
   let stopPoint = 0;
   let tries = 0;
   let lastInstructionsLength = null;
-  let toRemoveSigners = {};
+  let toRemoveSigners: { [key: string]: boolean } = {};
   instructions = instructions.filter((instr, i) => {
     if (instr.length > 0) {
       return true;
@@ -42,7 +63,7 @@ export async function sendTransactionsWithManualRetry(connection, wallet, instru
       return false;
     }
   });
-  let ids = [];
+  let ids: string[] = [];
   let filteredSigners = signers.filter((_, i) => !toRemoveSigners[i]);
 
   while (stopPoint < instructions.length && tries < 3) {
@@ -86,15 +107,15 @@ export async function sendTransactionsWithManualRetry(connection, wallet, instru
 }
 
 export const sendTransactions = async (
-  connection,
-  wallet,
-  instructionSet,
-  signersSet,
-  sequenceType = 'Parallel',
-  commitment = 'singleGossip',
-  successCallback = (txid, ind) => {},
-  failCallback = (txid, ind) => false,
-  block,
+  connection: web3.Connection,
+  wallet: any,
+  instructionSet: TransactionInstruction[][],
+  signersSet: Keypair[][],
+  sequenceType: SequenceType = 'Parallel',
+  commitment: Commitment = 'singleGossip',
+  successCallback: (txid: string, ind: number) => void = (txid, ind) => {},
+  failCallback: (txid: string, ind: number) => boolean = (txid, ind) => false,
+  block?: BlockhashAndFeeCalculator,
 ) => {
   if (!wallet.publicKey) throw new WalletNotConnectedError();
 
@@ -179,14 +200,14 @@ export const sendTransactions = async (
 };
 
 export const sendTransaction = async (
-  connection,
-  wallet,
-  instructions,
-  signers,
-  awaitConfirmation = true,
-  commitment = 'singleGossip',
-  includesFeePayer = false,
-  block,
+  connection: web3.Connection,
+  wallet: any,
+  instructions: TransactionInstruction[],
+  signers: Keypair[],
+  awaitConfirmation: boolean = true,
+  commitment: Commitment = 'singleGossip',
+  includesFeePayer: boolean = false,
+  block: any,
 ) => {
   if (!wallet.publicKey) throw new WalletNotConnectedError();
 
@@ -238,14 +259,14 @@ export const sendTransaction = async (
 };
 
 export const sendTransactionWithRetry = async (
-  connection,
-  wallet,
-  instructions,
-  signers,
-  commitment = 'singleGossip',
-  includesFeePayer = false,
-  block,
-  beforeSend,
+  connection: web3.Connection,
+  wallet: any,
+  instructions: TransactionInstruction[],
+  signers: Keypair[],
+  commitment: Commitment = 'singleGossip',
+  includesFeePayer: boolean = false,
+  block?: BlockhashAndFeeCalculator,
+  beforeSend?: () => void,
 ) => {
   if (!wallet.publicKey) throw new WalletNotConnectedError();
 
@@ -288,7 +309,15 @@ export const getUnixTs = () => {
 
 const DEFAULT_TIMEOUT = 15000;
 
-export async function sendSignedTransaction({ signedTransaction, connection, timeout = DEFAULT_TIMEOUT }) {
+export async function sendSignedTransaction({
+  signedTransaction,
+  connection,
+  timeout = DEFAULT_TIMEOUT,
+}: {
+  signedTransaction: Transaction;
+  connection: Connection;
+  timeout?: number;
+}) {
   const rawTransaction = signedTransaction.serialize();
   const startTime = getUnixTs();
   let slot = 0;
@@ -318,7 +347,7 @@ export async function sendSignedTransaction({ signedTransaction, connection, tim
     }
 
     slot = confirmation?.slot || 0;
-  } catch (err) {
+  } catch (err: any) {
     console.error('Timeout Error caught', err);
     if (err.timeout) {
       throw new Error('Timed out awaiting confirmation on transaction');
@@ -347,7 +376,7 @@ export async function sendSignedTransaction({ signedTransaction, connection, tim
   return { txid, slot };
 }
 
-async function simulateTransaction(connection, transaction, commitment) {
+async function simulateTransaction(connection: Connection, transaction: Transaction, commitment: Commitment) {
   // @ts-ignore
   transaction.recentBlockhash = await connection._recentBlockhash(
     // @ts-ignore
@@ -370,14 +399,14 @@ async function simulateTransaction(connection, transaction, commitment) {
 }
 
 async function awaitTransactionSignatureConfirmation(
-  txid,
-  timeout,
-  connection,
-  commitment = 'recent',
-  queryStatus = false,
-) {
-  let done = false;
-  let status = {
+  txid: string,
+  timeout: number,
+  connection: Connection,
+  commitment: Commitment = 'recent',
+  queryStatus: boolean = false,
+): Promise<SignatureStatus | null> {
+  let done: boolean = false;
+  let status: SignatureStatus | null = {
     slot: 0,
     confirmations: 0,
     err: null,
@@ -453,6 +482,6 @@ async function awaitTransactionSignatureConfirmation(
   console.info('Returning status', status);
   return status;
 }
-export function sleep(ms) {
+export function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }

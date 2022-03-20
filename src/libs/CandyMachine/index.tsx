@@ -1,8 +1,7 @@
-// @ts-nocheck
 import React from 'react';
 import { web3 } from '@project-serum/anchor';
 import { MintLayout, TOKEN_PROGRAM_ID, Token } from '@solana/spl-token';
-import { PublicKey } from '@solana/web3.js';
+import { AccountMeta, PublicKey, PublicKeyInitData, Signer, TransactionInstruction } from '@solana/web3.js';
 import { sendTransactions } from './connection';
 import {
   candyMachineProgram,
@@ -12,16 +11,17 @@ import {
   getNetworkExpire,
   getNetworkToken,
   CIVIC,
-} from './helpers';
+} from './helper';
+import { CandyMachineType } from '@/types';
 
 const { SystemProgram } = web3;
 
-const opts = {
-  preflightCommitment: 'processed',
+type Props = {
+  walletAddress: Signer;
 };
 
-const CandyMachine = ({ walletAddress }) => {
-  const getCandyMachineCreator = async (candyMachine) => {
+const CandyMachine: React.VFC<Props> = ({ walletAddress }) => {
+  const getCandyMachineCreator = async (candyMachine: PublicKeyInitData) => {
     const candyMachineID = new PublicKey(candyMachine);
     return await web3.PublicKey.findProgramAddress(
       [Buffer.from('candy_machine'), candyMachineID.toBuffer()],
@@ -29,7 +29,7 @@ const CandyMachine = ({ walletAddress }) => {
     );
   };
 
-  const getMetadata = async (mint) => {
+  const getMetadata = async (mint: PublicKey) => {
     return (
       await PublicKey.findProgramAddress(
         [Buffer.from('metadata'), TOKEN_METADATA_PROGRAM_ID.toBuffer(), mint.toBuffer()],
@@ -38,7 +38,7 @@ const CandyMachine = ({ walletAddress }) => {
     )[0];
   };
 
-  const getMasterEdition = async (mint) => {
+  const getMasterEdition = async (mint: PublicKey) => {
     return (
       await PublicKey.findProgramAddress(
         [Buffer.from('metadata'), TOKEN_METADATA_PROGRAM_ID.toBuffer(), mint.toBuffer(), Buffer.from('edition')],
@@ -48,12 +48,12 @@ const CandyMachine = ({ walletAddress }) => {
   };
 
   const createAssociatedTokenAccountInstruction = (
-    associatedTokenAddress,
-    payer,
-    walletAddress,
-    splTokenMintAddress,
-  ) => {
-    const keys = [
+    associatedTokenAddress: PublicKey,
+    payer: PublicKey,
+    walletAddress: PublicKey,
+    splTokenMintAddress: PublicKey,
+  ): TransactionInstruction => {
+    const keys: web3.AccountMeta[] = [
       { pubkey: payer, isSigner: true, isWritable: true },
       { pubkey: associatedTokenAddress, isSigner: false, isWritable: true },
       { pubkey: walletAddress, isSigner: false, isWritable: false },
@@ -77,20 +77,20 @@ const CandyMachine = ({ walletAddress }) => {
     });
   };
 
-  const mintToken = async () => {
+  const mintToken = async (candyMachine: CandyMachineType) => {
     const mint = web3.Keypair.generate();
 
-    const userTokenAccountAddress = (await getAtaForMint(mint.publicKey, walletAddress.publicKey))[0];
+    const userTokenAccountAddress: PublicKey = (await getAtaForMint(mint.publicKey, walletAddress.publicKey))[0];
 
-    const userPayingAccountAddress = candyMachine.state.tokenMint
+    const userPayingAccountAddress: PublicKey = candyMachine.state.tokenMint
       ? (await getAtaForMint(candyMachine.state.tokenMint, walletAddress.publicKey))[0]
       : walletAddress.publicKey;
 
     const candyMachineAddress = candyMachine.id;
-    const remainingAccounts = [];
+    const remainingAccounts: AccountMeta[] = [];
     const signers = [mint];
-    const cleanupInstructions = [];
-    const instructions = [
+    const cleanupInstructions: TransactionInstruction[] = [];
+    const instructions: TransactionInstruction[] = [
       web3.SystemProgram.createAccount({
         fromPubkey: walletAddress.publicKey,
         newAccountPubkey: mint.publicKey,
@@ -248,7 +248,8 @@ const CandyMachine = ({ walletAddress }) => {
           candyMachine.program.provider.wallet,
           [instructions, cleanupInstructions],
           [signers, []],
-          opts,
+          'Parallel',
+          'processed',
         )
       ).txs.map((t) => t.txid);
     } catch (e) {
@@ -261,6 +262,7 @@ const CandyMachine = ({ walletAddress }) => {
     <div className="machine-container">
       <p>Drop Date:</p>
       <p>Items Minted:</p>
+      {/* @ts-ignore */}
       <button className="cta-button mint-button" onClick={mintToken}>
         Mint NFT
       </button>
