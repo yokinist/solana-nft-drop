@@ -1,4 +1,3 @@
-import { BigNumber } from '@ethersproject/bignumber';
 import { web3 } from '@project-serum/anchor';
 import * as anchor from '@project-serum/anchor';
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
@@ -14,7 +13,7 @@ const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID = new web3.PublicKey('ATokenGPvbdG
 
 const CIVIC = new anchor.web3.PublicKey('gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs');
 
-const toDate = (value: BigNumber) => {
+const toDate = (value: anchor.BN) => {
   if (!value) {
     return;
   }
