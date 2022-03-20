@@ -1,4 +1,4 @@
-# dApp-boilerplate
+# solana-nft-drop
 
 ## Tech Stack
 
