@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { RINKEBY_CHAIN_ID } from '@/constants';
-import { getEthereumSafety } from '@/utils';
+import toast from 'react-hot-toast';
+import { getSolanaSafety } from '@/utils/solana';
 
 type ReturnUseWallet = {
   isRinkebyTestNetwork: boolean;
@@ -11,63 +11,47 @@ type ReturnUseWallet = {
 
 export const useWallet = (): ReturnUseWallet => {
   const [currentAccount, setCurrentAccount] = useState<string>();
-  const [currentChainId, setCurrentChainId] = useState<string>();
   const [isRinkebyTestNetwork, setRinkebyTestNetwork] = useState<boolean>(false);
-  const ethereum = getEthereumSafety();
-
-  const handleSetAccount = useCallback((accounts: unknown) => {
-    if (!Array.isArray(accounts)) return;
-    if (!accounts || accounts.length !== 0) {
-      const account = accounts[0];
-      setCurrentAccount(account);
-    } else {
-      alert('No authorized account found');
-    }
-  }, []);
+  const solana = getSolanaSafety();
 
   const checkIfWalletIsConnected = useCallback(async () => {
-    if (!ethereum) return;
-    const accounts = await ethereum.request({ method: 'eth_accounts' });
-    const chainId = await ethereum.request({ method: 'eth_chainId' });
-    if (typeof chainId === 'string') {
-      setCurrentChainId(chainId);
+    try {
+      if (solana && solana.isPhantom) {
+        toast('Phantom wallet found');
+        const response = await solana.connect({ onlyIfTrusted: true });
+        console.info('Connected with Public Key:', response.publicKey.toString());
+        const address = response.publicKey.toString();
+        console.debug(address);
+        setCurrentAccount(address);
+      } else {
+        toast('Solana object not found! Get a Phantom Wallet', { icon: '👻' });
+        return;
+      }
+    } catch (error) {
+      console.error(error);
     }
-    handleSetAccount(accounts);
-  }, [ethereum, handleSetAccount]);
+  }, [solana]);
 
   const connectWallet = async () => {
     try {
-      if (!ethereum) {
-        alert('Get MetaMask!');
-        return;
-      }
-      const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-      handleSetAccount(accounts);
+      if (!solana) return;
+      const response = await solana.connect();
+      console.info('Connected with Public Key:', response.publicKey.toString());
+      setCurrentAccount(response.publicKey.toString());
+      // something here
     } catch (error) {
       console.error(error);
     }
   };
 
-  const handleChainChanged = (chainId: unknown) => {
-    if (typeof chainId === 'string') {
-      setCurrentChainId(chainId);
-    }
-  };
-
   useEffect(() => {
-    if (!currentChainId) return;
-    const isRinkByChainId = currentChainId === RINKEBY_CHAIN_ID;
-    setRinkebyTestNetwork(isRinkByChainId);
-  }, [currentChainId]);
-
-  useEffect(() => {
-    if (!ethereum) return;
-    checkIfWalletIsConnected();
-    ethereum.on('chainChanged', handleChainChanged);
-    return () => {
-      ethereum.off('chainChanged', handleChainChanged);
+    const onLoad = async () => {
+      await checkIfWalletIsConnected();
     };
-  }, [checkIfWalletIsConnected, ethereum]);
+    window.addEventListener('load', onLoad);
+    return () => window.removeEventListener('load', onLoad);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return {
     isRinkebyTestNetwork,

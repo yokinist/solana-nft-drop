@@ -37,4 +37,4 @@ yarn-error.log*
 # compile contract
 /src/artifacts/*
 !/src/artifacts/contracts
-/cache
+/.cache
