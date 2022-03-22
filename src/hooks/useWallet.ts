@@ -4,13 +4,13 @@ import { getSolanaSafety } from '@/utils/solana';
 
 type ReturnUseWallet = {
   isRinkebyTestNetwork: boolean;
-  currentAccount: string | undefined;
+  walletAddress: string | undefined;
   connectWallet: () => void;
   checkIfWalletIsConnected: () => void;
 };
 
 export const useWallet = (): ReturnUseWallet => {
-  const [currentAccount, setCurrentAccount] = useState<string>();
+  const [walletAddress, setWalletAddress] = useState<string>();
   const [isRinkebyTestNetwork, setRinkebyTestNetwork] = useState<boolean>(false);
   const solana = getSolanaSafety();
 
@@ -19,10 +19,11 @@ export const useWallet = (): ReturnUseWallet => {
       if (solana && solana.isPhantom) {
         toast('Phantom wallet found');
         const response = await solana.connect({ onlyIfTrusted: true });
+
         console.info('Connected with Public Key:', response.publicKey.toString());
         const address = response.publicKey.toString();
         console.debug(address);
-        setCurrentAccount(address);
+        setWalletAddress(address);
       } else {
         toast('Solana object not found! Get a Phantom Wallet', { icon: '👻' });
         return;
@@ -37,7 +38,7 @@ export const useWallet = (): ReturnUseWallet => {
       if (!solana) return;
       const response = await solana.connect();
       console.info('Connected with Public Key:', response.publicKey.toString());
-      setCurrentAccount(response.publicKey.toString());
+      setWalletAddress(response.publicKey.toString());
       // something here
     } catch (error) {
       console.error(error);
@@ -55,7 +56,7 @@ export const useWallet = (): ReturnUseWallet => {
 
   return {
     isRinkebyTestNetwork,
-    currentAccount,
+    walletAddress,
     connectWallet,
     checkIfWalletIsConnected,
   };

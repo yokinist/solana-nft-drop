@@ -1,12 +1,15 @@
 import { useWallet } from '@/hooks';
+import CandyMachine from '@/libs/CandyMachine';
 import { Button, Layout } from '@/shared';
+import { getSolanaSafety } from '@/utils/solana';
 
 type Props = {
   //
 };
 
 const Page: React.VFC<Props> = ({}) => {
-  const { currentAccount, connectWallet } = useWallet();
+  const { walletAddress, connectWallet } = useWallet();
+  const solana = getSolanaSafety();
 
   return (
     <>
@@ -16,8 +19,9 @@ const Page: React.VFC<Props> = ({}) => {
             <h3>🍭 Candy Drop</h3>
             <p>NFT drop machine with fair mint</p>
           </div>
-          {currentAccount ? (
-            <p>{currentAccount}</p>
+          {walletAddress && solana ? (
+            // @ts-ignore
+            <CandyMachine walletAddress={solana} />
           ) : (
             <Button theme="primary" onClick={connectWallet}>
               Connect Wallet

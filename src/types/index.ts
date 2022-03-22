@@ -35,6 +35,7 @@ export type CandyMachineState = {
   isActive: boolean;
   isPresale: boolean;
   goLiveDate: anchor.BN;
+  goLiveDateTimeString: string;
   price: anchor.BN;
   gatekeeper: null | {
     expireOnUse: boolean;

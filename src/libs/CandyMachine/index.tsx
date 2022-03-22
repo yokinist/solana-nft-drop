@@ -1,7 +1,17 @@
-import React from 'react';
-import { web3 } from '@project-serum/anchor';
+// @ts-nocheck
+import React, { useCallback, useEffect, useState } from 'react';
+import { Connection } from '@metaplex/js';
+import * as anchor from '@project-serum/anchor';
+import { Program, Provider, web3 } from '@project-serum/anchor';
 import { MintLayout, TOKEN_PROGRAM_ID, Token } from '@solana/spl-token';
-import { AccountMeta, PublicKey, PublicKeyInitData, Signer, TransactionInstruction } from '@solana/web3.js';
+import {
+  AccountMeta,
+  ConfirmOptions,
+  PublicKey,
+  PublicKeyInitData,
+  Signer,
+  TransactionInstruction,
+} from '@solana/web3.js';
 import { sendTransactions } from './connection';
 import {
   candyMachineProgram,
@@ -13,14 +23,23 @@ import {
   CIVIC,
 } from './helper';
 import { CandyMachineType } from '@/types';
+import { getSolanaSafety } from '@/utils/solana';
 
 const { SystemProgram } = web3;
+
+const opts: ConfirmOptions = {
+  preflightCommitment: 'processed',
+};
 
 type Props = {
   walletAddress: Signer;
 };
 
 const CandyMachine: React.VFC<Props> = ({ walletAddress }) => {
+  const [candyMachine, setCandyMachine] = useState<CandyMachineType>();
+
+  const solana = getSolanaSafety();
+
   const getCandyMachineCreator = async (candyMachine: PublicKeyInitData) => {
     const candyMachineID = new PublicKey(candyMachine);
     return await web3.PublicKey.findProgramAddress(
@@ -258,16 +277,104 @@ const CandyMachine: React.VFC<Props> = ({ walletAddress }) => {
     return [];
   };
 
-  return (
+  const getProvider = useCallback(() => {
+    if (!solana) return;
+    const rpcHost = process.env.SOLANA_RPC_HOST;
+    // connectionオブジェクトを作成
+    const connection = new Connection(rpcHost);
+
+    // 新しくSolanaのprovider オブジェクトを作成する
+    // @ts-ignore
+    const provider = new Provider(connection, solana, opts);
+
+    return provider;
+  }, [solana]);
+
+  // getCandyMachineStateを非同期の関数として宣言する。
+  const getCandyMachineState = useCallback(async () => {
+    console.debug('hogegee');
+    const { CANDY_MACHINE_ID } = process.env;
+    const provider = getProvider();
+
+    console.debug({ provider });
+
+    //  デプロイされたCandy Machineプログラムのメタデータを取得する
+    const idl = await Program.fetchIdl(candyMachineProgram, provider);
+
+    console.debug({ idl });
+
+    console.debug({ CANDY_MACHINE_ID });
+
+    if (!idl || !CANDY_MACHINE_ID) return;
+
+    // 呼び出し可能なプログラムを作成する
+    const program: anchor.Program = new Program(idl, candyMachineProgram, provider);
+
+    // Candy Machineからメタデータを取得する
+    const candyMachine = await program.account.candyMachine.fetch(CANDY_MACHINE_ID);
+
+    //メタデータをすべて解析してログアウトする
+    const itemsAvailable: number = candyMachine.data.itemsAvailable.toNumber();
+    const itemsRedeemed: number = candyMachine.itemsRedeemed.toNumber();
+    const itemsRemaining: number = itemsAvailable - itemsRedeemed;
+    const goLiveData: number = candyMachine.data.goLiveDate.toNumber();
+    const presale: boolean =
+      candyMachine.data.whitelistMintSettings &&
+      candyMachine.data.whitelistMintSettings.presale &&
+      (!candyMachine.data.goLiveDate || candyMachine.data.goLiveDate.toNumber() > new Date().getTime() / 1000);
+
+    const goLiveDateTimeString = `${new Date(goLiveData * 1000).toLocaleDateString()} @ ${new Date(
+      goLiveData * 1000,
+    ).toLocaleTimeString()}`;
+
+    // このデータをstateに追加してレンダリングする
+    setCandyMachine({
+      id: CANDY_MACHINE_ID,
+      program,
+      state: {
+        itemsAvailable,
+        itemsRedeemed,
+        itemsRemaining,
+        goLiveDate: goLiveData as any,
+        goLiveDateTimeString,
+        isSoldOut: itemsRemaining === 0,
+        isActive:
+          (presale || candyMachine.data.goLiveDate.toNumber() < new Date().getTime() / 1000) &&
+          (candyMachine.endSettings
+            ? candyMachine.endSettings.endSettingType.date
+              ? candyMachine.endSettings.number.toNumber() > new Date().getTime() / 1000
+              : itemsRedeemed < candyMachine.endSettings.number.toNumber()
+            : true),
+        isPresale: presale,
+        goLiveDate: candyMachine.data.goLiveDate,
+        treasury: candyMachine.wallet,
+        tokenMint: candyMachine.tokenMint,
+        gatekeeper: candyMachine.data.gatekeeper,
+        endSettings: candyMachine.data.endSettings,
+        whitelistMintSettings: candyMachine.data.whitelistMintSettings,
+        hiddenSettings: candyMachine.data.hiddenSettings,
+        price: candyMachine.data.price,
+      },
+    });
+  }, [getProvider]);
+
+  useEffect(() => {
+    console.debug(candyMachine);
+  }, [candyMachine]);
+
+  useEffect(() => {
+    getCandyMachineState();
+  }, []);
+
+  return candyMachine ? (
     <div className="machine-container">
-      <p>Drop Date:</p>
-      <p>Items Minted:</p>
-      {/* @ts-ignore */}
-      <button className="cta-button mint-button" onClick={mintToken}>
+      <p>{`Drop Date: ${candyMachine.state.goLiveDateTimeString}`}</p>
+      <p>{`Items Minted: ${candyMachine.state.itemsRedeemed} / ${candyMachine.state.itemsAvailable}`}</p>
+      <button className="cta-button mint-button" onClick={null}>
         Mint NFT
       </button>
     </div>
-  );
+  ) : null;
 };
 
 export default CandyMachine;
