@@ -1,5 +1,5 @@
+import { CandyMachine } from '@/components';
 import { useWallet } from '@/hooks';
-import CandyMachine from '@/libs/CandyMachine';
 import { Button, Layout } from '@/shared';
 import { getSolanaSafety } from '@/utils/solana';
 

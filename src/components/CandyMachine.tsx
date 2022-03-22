@@ -12,7 +12,7 @@ import {
   Signer,
   TransactionInstruction,
 } from '@solana/web3.js';
-import { sendTransactions } from './connection';
+import { sendTransactions } from '@/libs/CandyMachine/connection';
 import {
   candyMachineProgram,
   TOKEN_METADATA_PROGRAM_ID,
@@ -21,7 +21,7 @@ import {
   getNetworkExpire,
   getNetworkToken,
   CIVIC,
-} from './helper';
+} from '@/libs/CandyMachine/helper';
 import { Button } from '@/shared';
 import { CandyMachineType } from '@/types';
 import { getSolanaSafety } from '@/utils/solana';
@@ -36,7 +36,7 @@ type Props = {
   walletAddress: Signer;
 };
 
-const CandyMachine: React.VFC<Props> = ({ walletAddress }) => {
+export const CandyMachine: React.VFC<Props> = ({ walletAddress }) => {
   const [candyMachine, setCandyMachine] = useState<CandyMachineType>();
 
   const solana = getSolanaSafety();
@@ -372,5 +372,3 @@ const CandyMachine: React.VFC<Props> = ({ walletAddress }) => {
     </div>
   ) : null;
 };
-
-export default CandyMachine;
