@@ -99,7 +99,7 @@ const CandyMachine: React.VFC<Props> = ({ walletAddress }) => {
 
   const mintToken = async () => {
     const mint = web3.Keypair.generate();
-    if (!mint || !candyMachine.state) return;
+    if (!mint || !candyMachine?.state) return;
 
     const userTokenAccountAddress: PublicKey = (await getAtaForMint(mint.publicKey, walletAddress.publicKey))[0];
 
