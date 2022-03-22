@@ -12,6 +12,7 @@ import {
   Signer,
   TransactionInstruction,
 } from '@solana/web3.js';
+import { CountDown } from '@/components';
 import { sendTransactions } from '@/libs/CandyMachine/connection';
 import {
   candyMachineProgram,
@@ -294,11 +295,8 @@ export const CandyMachine: React.VFC<Props> = ({ walletAddress }) => {
 
   // getCandyMachineStateを非同期の関数として宣言する。
   const getCandyMachineState = useCallback(async () => {
-    console.debug('hogegee');
     const { CANDY_MACHINE_ID } = process.env;
     const provider = getProvider();
-
-    console.debug({ provider });
 
     //  デプロイされたCandy Machineプログラムのメタデータを取得する
     const idl = await Program.fetchIdl(candyMachineProgram, provider);
@@ -315,14 +313,14 @@ export const CandyMachine: React.VFC<Props> = ({ walletAddress }) => {
     const itemsAvailable: number = candyMachine.data.itemsAvailable.toNumber();
     const itemsRedeemed: number = candyMachine.itemsRedeemed.toNumber();
     const itemsRemaining: number = itemsAvailable - itemsRedeemed;
-    const goLiveData: number = candyMachine.data.goLiveDate.toNumber();
+    const goLiveDate: number = candyMachine.data.goLiveDate.toNumber();
     const presale: boolean =
       candyMachine.data.whitelistMintSettings &&
       candyMachine.data.whitelistMintSettings.presale &&
       (!candyMachine.data.goLiveDate || candyMachine.data.goLiveDate.toNumber() > new Date().getTime() / 1000);
 
-    const goLiveDateTimeString = `${new Date(goLiveData * 1000).toLocaleDateString()} @ ${new Date(
-      goLiveData * 1000,
+    const goLiveDateTimeString = `${new Date(goLiveDate * 1000).toLocaleDateString()} @ ${new Date(
+      goLiveDate * 1000,
     ).toLocaleTimeString()}`;
 
     // このデータをstateに追加してレンダリングする
@@ -333,7 +331,7 @@ export const CandyMachine: React.VFC<Props> = ({ walletAddress }) => {
         itemsAvailable,
         itemsRedeemed,
         itemsRemaining,
-        goLiveDate: goLiveData as any,
+        goLiveDate,
         goLiveDateTimeString,
         isSoldOut: itemsRemaining === 0,
         isActive:
@@ -357,18 +355,34 @@ export const CandyMachine: React.VFC<Props> = ({ walletAddress }) => {
   }, [getProvider]);
 
   useEffect(() => {
-    console.debug(candyMachine);
-  }, [candyMachine]);
-
-  useEffect(() => {
     getCandyMachineState();
   }, [getCandyMachineState]);
 
+  const renderDropTimer = () => {
+    if (!candyMachine?.state) return null;
+    const currentDate = new Date();
+    // ここでやっているのは UNIX 時間から Date オブジェクトへの変換
+    const dropDate = new Date(candyMachine.state.goLiveDate * 1000);
+    //ドロップ日よりも前の場合
+    if (currentDate < dropDate) {
+      console.info('Before drop date!');
+      // ドロップ日を返します
+      return <CountDown dropDate={dropDate} />;
+    }
+
+    // 条件に満たない場合はドロップ日のみを返します
+    return <p>{`Drop Date: ${candyMachine.state.goLiveDateTimeString}`}</p>;
+  };
+
   return candyMachine?.state ? (
     <div className="machine-container">
-      <p>{`Drop Date: ${candyMachine.state.goLiveDateTimeString}`}</p>
+      {renderDropTimer()}
       <p>{`Items Minted: ${candyMachine.state.itemsRedeemed} / ${candyMachine.state.itemsAvailable}`}</p>
-      <Button onClick={mintToken}>Mint NFT</Button>
+      {candyMachine.state.itemsRedeemed === candyMachine.state.itemsAvailable ? (
+        <p>sold out</p>
+      ) : (
+        <Button onClick={mintToken}>Mint NFT</Button>
+      )}
     </div>
   ) : null;
 };
