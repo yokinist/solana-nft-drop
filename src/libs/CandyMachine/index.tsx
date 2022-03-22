@@ -22,6 +22,7 @@ import {
   getNetworkToken,
   CIVIC,
 } from './helper';
+import { Button } from '@/shared';
 import { CandyMachineType } from '@/types';
 import { getSolanaSafety } from '@/utils/solana';
 
@@ -96,8 +97,9 @@ const CandyMachine: React.VFC<Props> = ({ walletAddress }) => {
     });
   };
 
-  const mintToken = async (candyMachine: CandyMachineType) => {
+  const mintToken = async () => {
     const mint = web3.Keypair.generate();
+    if (!mint || !candyMachine.state) return;
 
     const userTokenAccountAddress: PublicKey = (await getAtaForMint(mint.publicKey, walletAddress.publicKey))[0];
 
@@ -301,10 +303,6 @@ const CandyMachine: React.VFC<Props> = ({ walletAddress }) => {
     //  デプロイされたCandy Machineプログラムのメタデータを取得する
     const idl = await Program.fetchIdl(candyMachineProgram, provider);
 
-    console.debug({ idl });
-
-    console.debug({ CANDY_MACHINE_ID });
-
     if (!idl || !CANDY_MACHINE_ID) return;
 
     // 呼び出し可能なプログラムを作成する
@@ -364,15 +362,13 @@ const CandyMachine: React.VFC<Props> = ({ walletAddress }) => {
 
   useEffect(() => {
     getCandyMachineState();
-  }, []);
+  }, [getCandyMachineState]);
 
-  return candyMachine ? (
+  return candyMachine?.state ? (
     <div className="machine-container">
       <p>{`Drop Date: ${candyMachine.state.goLiveDateTimeString}`}</p>
       <p>{`Items Minted: ${candyMachine.state.itemsRedeemed} / ${candyMachine.state.itemsAvailable}`}</p>
-      <button className="cta-button mint-button" onClick={null}>
-        Mint NFT
-      </button>
+      <Button onClick={mintToken}>Mint NFT</Button>
     </div>
   ) : null;
 };
