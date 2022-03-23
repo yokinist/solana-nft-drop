@@ -13,8 +13,8 @@ export const CountDown: React.VFC<Props> = ({ dropDate }) => {
 
     // setIntervalを使用して、このコードの一部を1秒ごとに実行します。
     const interval = setInterval(() => {
-      const currentDate = new Date();
-      const distance = dropDate.getTime() - currentDate.getTime();
+      const currentDate = new Date().getTime();
+      const distance = dropDate.getTime() - currentDate;
 
       // 時間の計算をするだけで、さまざまなプロパティを得ることができます
       const days = Math.floor(distance / (1000 * 60 * 60 * 24));
