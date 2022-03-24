@@ -34,10 +34,21 @@ type Props = {
   walletAddress: Signer;
 };
 
-export const useCandyMachine = ({ walletAddress }: Props) => {
+type ReturnUseCandyMachine = {
+  candyMachine: CandyMachineType | undefined;
+  dropDate: Date | undefined;
+  mintToken: () => void;
+};
+
+export const useCandyMachine = ({ walletAddress }: Props): ReturnUseCandyMachine => {
   const [candyMachine, setCandyMachine] = useState<CandyMachineType>();
 
   const solana = getSolanaSafety();
+
+  const dropDate: Date | undefined = useMemo(() => {
+    if (!candyMachine?.state?.goLiveDate) return undefined;
+    return new Date(candyMachine.state.goLiveDate * 1000);
+  }, [candyMachine]);
 
   const getCandyMachineCreator = async (candyMachine: PublicKeyInitData) => {
     const candyMachineID = new PublicKey(candyMachine);
@@ -355,22 +366,8 @@ export const useCandyMachine = ({ walletAddress }: Props) => {
     getCandyMachineState();
   }, [getCandyMachineState]);
 
-  const dropDate: Date | undefined = useMemo(() => {
-    if (!candyMachine?.state?.goLiveDate) return undefined;
-    return new Date(candyMachine.state.goLiveDate * 1000);
-  }, [candyMachine]);
-
-  const buttonState: 'soldOut' | 'waitMint' | 'mintNow' | undefined = useMemo(() => {
-    if (!candyMachine?.state || !dropDate) return undefined;
-    if (candyMachine.state.itemsRedeemed === candyMachine.state.itemsAvailable) return 'soldOut';
-    const currentDate = new Date();
-    if (currentDate < dropDate) return 'waitMint';
-    return 'mintNow';
-  }, [candyMachine, dropDate]);
-
   return {
     candyMachine,
-    buttonState,
     dropDate,
     mintToken,
   };

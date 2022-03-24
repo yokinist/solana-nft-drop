@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { InformationCircleIcon } from '@heroicons/react/solid';
 import { Signer } from '@solana/web3.js';
 import { CountDown } from '@/components';
@@ -11,7 +11,16 @@ type Props = {
 };
 
 export const CandyMachine: React.VFC<Props> = ({ walletAddress }) => {
-  const { candyMachine, buttonState, mintToken, dropDate } = useCandyMachine({ walletAddress });
+  const { candyMachine, mintToken, dropDate } = useCandyMachine({ walletAddress });
+
+  const buttonState: 'soldOut' | 'waitMint' | 'mintNow' | undefined = useMemo(() => {
+    if (!candyMachine?.state || !dropDate) return undefined;
+    if (candyMachine.state.itemsRedeemed === candyMachine.state.itemsAvailable) return 'soldOut';
+    const currentDate = new Date();
+    if (currentDate < dropDate) return 'waitMint';
+    return 'mintNow';
+  }, [candyMachine, dropDate]);
+
   return candyMachine?.state && buttonState ? (
     <>
       <div className="flex flex-col">
