@@ -1,9 +1,8 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { getSolanaSafety } from '@/utils/solana';
 
 type ReturnUseWallet = {
-  isRinkebyTestNetwork: boolean;
   walletAddress: string | undefined;
   connectWallet: () => void;
   checkIfWalletIsConnected: () => void;
@@ -11,12 +10,11 @@ type ReturnUseWallet = {
 
 export const useWallet = (): ReturnUseWallet => {
   const [walletAddress, setWalletAddress] = useState<string>();
-  const [isRinkebyTestNetwork, setRinkebyTestNetwork] = useState<boolean>(false);
   const solana = getSolanaSafety();
 
-  const checkIfWalletIsConnected = useCallback(async () => {
+  const checkIfWalletIsConnected = async () => {
     try {
-      if (solana && solana.isPhantom) {
+      if (solana?.isPhantom) {
         const response = await solana.connect({ onlyIfTrusted: true });
         console.info('Connected with Public Key:', response.publicKey.toString());
         const address = response.publicKey.toString();
@@ -29,7 +27,7 @@ export const useWallet = (): ReturnUseWallet => {
     } catch (error) {
       console.error(error);
     }
-  }, [solana]);
+  };
 
   const connectWallet = async () => {
     try {
@@ -53,7 +51,6 @@ export const useWallet = (): ReturnUseWallet => {
   }, []);
 
   return {
-    isRinkebyTestNetwork,
     walletAddress,
     connectWallet,
     checkIfWalletIsConnected,
