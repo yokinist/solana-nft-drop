@@ -6,7 +6,7 @@ type Props = {
 };
 
 const Page: React.VFC<Props> = ({}) => {
-  const solana = window?.solana ?? null;
+  const solana = typeof window !== 'undefined' ? window?.solana ?? null : null;
   const { walletAddress, connectWallet } = useWallet(solana);
 
   return (
