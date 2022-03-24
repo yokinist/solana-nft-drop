@@ -42,11 +42,7 @@ export const useWallet = (): ReturnUseWallet => {
   };
 
   useEffect(() => {
-    const onLoad = async () => {
-      await checkIfWalletIsConnected();
-    };
-    window.addEventListener('load', onLoad);
-    return () => window.removeEventListener('load', onLoad);
+    checkIfWalletIsConnected();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
