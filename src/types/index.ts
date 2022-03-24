@@ -1,4 +1,3 @@
-import { MetaMaskInpageProvider as MetaMaskInpageProviderType } from '@metamask/providers';
 import * as anchor from '@project-serum/anchor';
 import { PublicKey } from '@solana/web3.js';
 
@@ -14,9 +13,6 @@ export type PhantomProvider = {
   on: (event: PhantomEvent, callback: (args: any) => void) => void;
   isPhantom: boolean;
 };
-
-// #TODO: あとで消す
-export type EthereumType = MetaMaskInpageProviderType;
 
 export type CandyMachineType = {
   id: anchor.web3.PublicKey;
