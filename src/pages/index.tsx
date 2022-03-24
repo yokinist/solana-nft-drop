@@ -7,8 +7,8 @@ type Props = {
 };
 
 const Page: React.VFC<Props> = ({}) => {
-  const { walletAddress, connectWallet } = useWallet();
   const solana = getSolanaSafety();
+  const { walletAddress, connectWallet } = useWallet(solana);
 
   return (
     <>

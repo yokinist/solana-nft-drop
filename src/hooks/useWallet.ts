@@ -1,29 +1,22 @@
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { getSolanaSafety } from '@/utils/solana';
+import { PhantomProvider } from '@/types';
 
 type ReturnUseWallet = {
   walletAddress: string | undefined;
   connectWallet: () => void;
-  checkIfWalletIsConnected: () => void;
 };
 
-export const useWallet = (): ReturnUseWallet => {
+export const useWallet = (solana: PhantomProvider | null): ReturnUseWallet => {
   const [walletAddress, setWalletAddress] = useState<string>();
-  const solana = getSolanaSafety();
 
-  const checkIfWalletIsConnected = async () => {
+  const checkIfWalletIsConnected = async (solana: PhantomProvider) => {
     try {
-      if (solana?.isPhantom) {
-        const response = await solana.connect({ onlyIfTrusted: true });
-        console.info('Connected with Public Key:', response.publicKey.toString());
-        const address = response.publicKey.toString();
-        console.debug(address);
-        setWalletAddress(address);
-      } else {
-        toast('Solana object not found! Get a Phantom Wallet', { icon: '👻' });
-        return;
-      }
+      const response = await solana.connect({ onlyIfTrusted: true });
+      console.info('Connected with Public Key:', response.publicKey.toString());
+      const address = response.publicKey.toString();
+      console.debug(address);
+      setWalletAddress(address);
     } catch (error) {
       console.error(error);
     }
@@ -42,13 +35,15 @@ export const useWallet = (): ReturnUseWallet => {
   };
 
   useEffect(() => {
-    checkIfWalletIsConnected();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (!solana?.isPhantom) {
+      toast('Solana object not found! Get a Phantom Wallet', { icon: '👻' });
+    } else {
+      checkIfWalletIsConnected(solana);
+    }
+  }, [solana]);
 
   return {
     walletAddress,
     connectWallet,
-    checkIfWalletIsConnected,
   };
 };
