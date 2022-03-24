@@ -1,4 +1,4 @@
-import { CandyMachine, Hero } from '@/components';
+import { CandyMachine, HeroLayout } from '@/components';
 import { useWallet } from '@/hooks';
 import { getSolanaSafety } from '@/utils/solana';
 
@@ -11,7 +11,7 @@ const Page: React.VFC<Props> = ({}) => {
   const { walletAddress, connectWallet } = useWallet();
   return (
     <>
-      <Hero>
+      <HeroLayout>
         {solana && walletAddress ? (
           // @ts-ignore
           <CandyMachine walletAddress={solana} />
@@ -26,7 +26,7 @@ const Page: React.VFC<Props> = ({}) => {
             </button>
           </div>
         )}
-      </Hero>
+      </HeroLayout>
     </>
   );
 };
