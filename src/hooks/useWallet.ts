@@ -1,19 +1,17 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { PhantomProvider } from '@/types';
 
 type ReturnUseWallet = {
   walletAddress: string | undefined;
-  connectWallet: () => void;
+  connectWallet: (solana: PhantomProvider | null) => void;
 };
 
 export const useWallet = (solana: PhantomProvider | null): ReturnUseWallet => {
   const [walletAddress, setWalletAddress] = useState<string>();
-  const [solanaState, setSolanaState] = useState<PhantomProvider | null>(null);
 
   const checkIfWalletIsConnected = async (solana: PhantomProvider) => {
     try {
-      setSolanaState(solana);
       const response = await solana.connect({ onlyIfTrusted: true });
       const address = response.publicKey.toString();
       setWalletAddress(address);
@@ -22,17 +20,17 @@ export const useWallet = (solana: PhantomProvider | null): ReturnUseWallet => {
     }
   };
 
-  const connectWallet = useCallback(async () => {
+  const connectWallet = async (passedSolana: PhantomProvider | null) => {
     try {
-      console.debug({ solanaState });
-      if (!solanaState) return;
-      const response = await solanaState.connect();
+      console.debug({ passedSolana });
+      if (!passedSolana) return;
+      const response = await passedSolana.connect();
       setWalletAddress(response.publicKey.toString());
       // something here
     } catch (error) {
       console.error(error);
     }
-  }, [solanaState]);
+  };
 
   useEffect(() => {
     if (!solana?.isPhantom) {
