@@ -13,9 +13,7 @@ export const useWallet = (solana: PhantomProvider | null): ReturnUseWallet => {
   const checkIfWalletIsConnected = async (solana: PhantomProvider) => {
     try {
       const response = await solana.connect({ onlyIfTrusted: true });
-      console.info('Connected with Public Key:', response.publicKey.toString());
       const address = response.publicKey.toString();
-      console.debug(address);
       setWalletAddress(address);
     } catch (error) {
       console.error(error);
@@ -26,7 +24,6 @@ export const useWallet = (solana: PhantomProvider | null): ReturnUseWallet => {
     try {
       if (!solana) return;
       const response = await solana.connect();
-      console.info('Connected with Public Key:', response.publicKey.toString());
       setWalletAddress(response.publicKey.toString());
       // something here
     } catch (error) {
