@@ -22,6 +22,7 @@ export const useWallet = (solana: PhantomProvider | null): ReturnUseWallet => {
 
   const connectWallet = async () => {
     try {
+      console.debug({ solana });
       if (!solana) return;
       const response = await solana.connect();
       setWalletAddress(response.publicKey.toString());
