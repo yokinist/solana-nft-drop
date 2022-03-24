@@ -1,18 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 
-type Props = {
-  dropDate: Date;
-};
+type Props = { dropDate: Date };
 
-type DateObj = {
-  days: number;
-  hours: number;
-  minutes: number;
-  seconds: number;
-};
+type DateKey = 'days' | 'hours' | 'minutes' | 'seconds';
+type DateObj = { [K in DateKey]: number | undefined };
 
 export const CountDown: React.VFC<Props> = ({ dropDate }) => {
-  const [countDateObj, setCountDateObj] = useState<DateObj>();
+  const [countDateObj, setCountDateObj] = useState<DateObj>({
+    days: undefined,
+    hours: undefined,
+    minutes: undefined,
+    seconds: undefined,
+  });
 
   useEffect(() => {
     if (!dropDate) return;
@@ -32,13 +31,11 @@ export const CountDown: React.VFC<Props> = ({ dropDate }) => {
         seconds,
       });
 
-      // distanceが0になったらドロップタイムが来たことを示します
       if (distance < 0) {
         clearInterval(interval);
       }
     }, 1000);
 
-    // コンポーネントが取り外されたときには、intervalを初期化しましょう。
     return () => {
       if (interval) {
         clearInterval(interval);
@@ -52,30 +49,18 @@ export const CountDown: React.VFC<Props> = ({ dropDate }) => {
         <span className="base text-gray-500 text-center mb-2 text-sm">Drop starting in ...</span>
         <div className="flex flex-col">
           <div className="flex w-60 justify-evenly">
-            <div className="flex flex-col justify-center text-center">
-              <span className="text-sm tracking-tight bold text-gray-900 sm:text-2xl md:text-3xl font-mono">
-                {countDateObj?.days ?? 'X'}
-              </span>
-              <span className="text-xs text-gray-500">Days</span>
-            </div>
-            <div className="flex flex-col justify-center text-center">
-              <span className="text-sm tracking-tight bold text-gray-900 sm:text-2xl md:text-3xl font-mono">
-                {countDateObj?.hours ?? 'X'}
-              </span>
-              <span className="text-xs text-gray-500">Hours</span>
-            </div>
-            <div className="flex flex-col justify-center text-center">
-              <span className="text-sm tracking-tight bold text-gray-900 sm:text-2xl md:text-3xl font-mono">
-                {countDateObj?.minutes ?? 'X'}
-              </span>
-              <span className="text-xs text-gray-500">Minutes</span>
-            </div>
-            <div className="flex flex-col justify-center text-center">
-              <span className="text-sm tracking-tight bold text-gray-900 sm:text-2xl md:text-3xl font-mono">
-                {countDateObj?.seconds ?? 'X'}
-              </span>
-              <span className="text-xs text-gray-500">Seconds</span>
-            </div>
+            {Object.keys(countDateObj).map((dateKey) => {
+              return (
+                <Fragment key={dateKey}>
+                  <div className="flex flex-col justify-center text-center">
+                    <span className="text-sm tracking-tight bold text-gray-900 sm:text-2xl md:text-3xl font-mono">
+                      {countDateObj[dateKey as DateKey] ?? 'X'}
+                    </span>
+                    <span className="text-xs text-gray-500">{dateKey}</span>
+                  </div>
+                </Fragment>
+              );
+            })}
           </div>
         </div>
       </div>
