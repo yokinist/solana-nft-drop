@@ -2,8 +2,8 @@
 
 ## Tech Stack
 
-- TypeScript, Next.js, Hardhat, Solidity, Tailwind CSS
-- App works on only Rinkeby Test Network
+- TypeScript, Next.js, Metaplex, Candy Machine v2, Tailwind CSS
+- App works on only Solana devnet
 
 ## How to get started
 
@@ -27,7 +27,8 @@ $ yarn dev
 ## How to deploy contract
 
 ```bash
-$ yarn contract:deploy
-# If you want to run contract `$ yarn contract:run`
-# Contracts are located in the `. /contracts/`
+$ ts-node ~/metaplex/js/packages/cli/src/candy-machine-v2-cli.ts upload -e devnet -k ~/.config/solana/devnet.json -cp config.json ./assets
+# If you want to update contract `ts-node ~/metaplex/js/packages/cli/src/candy-machine-v2-cli.ts update_candy_machine -e devnet -k ~/.config/solana/devnet.json -cp config.json`
 ```
+
+more: https://docs.metaplex.com/token-metadata/getting-started
