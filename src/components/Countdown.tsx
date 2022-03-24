@@ -53,13 +53,13 @@ export const CountDown: React.VFC<Props> = ({ dropDate }) => {
         <div className="flex flex-col">
           <div className="flex w-60 justify-evenly">
             <div className="flex flex-col justify-center text-center">
-              <span className="text-xl tracking-tight bold text-gray-900 sm:text-2xl md:text-3xl font-mono">
+              <span className="text-sm tracking-tight bold text-gray-900 sm:text-2xl md:text-3xl font-mono">
                 {countDateObj?.days ?? 'X'}
               </span>
               <span className="text-xs text-gray-500">Days</span>
             </div>
             <div className="flex flex-col justify-center text-center">
-              <span className="text-xs tracking-tight bold text-gray-900 sm:text-2xl md:text-3xl font-mono">
+              <span className="text-sm tracking-tight bold text-gray-900 sm:text-2xl md:text-3xl font-mono">
                 {countDateObj?.hours ?? 'X'}
               </span>
               <span className="text-xs text-gray-500">Hours</span>
