@@ -46,41 +46,39 @@ export const CountDown: React.VFC<Props> = ({ dropDate }) => {
     };
   }, [dropDate]);
 
-  return countDateObj ? (
+  return (
     <div className="flex text-center">
       <div className="border-2 rounded-lg px-3 py-3 border-gray-200 ">
         <span className="base text-gray-500 text-center mb-2 text-sm">Drop starting in ...</span>
-        {countDateObj && (
-          <div className="flex flex-col">
-            <div className="flex w-60 justify-evenly">
-              <div className="flex flex-col justify-center text-center">
-                <span className="text-xl tracking-tight bold text-gray-900 sm:text-2xl md:text-3xl font-mono">
-                  {countDateObj.days}
-                </span>
-                <span className="text-xs text-gray-500">Days</span>
-              </div>
-              <div className="flex flex-col justify-center text-center">
-                <span className="text-xs tracking-tight bold text-gray-900 sm:text-2xl md:text-3xl font-mono">
-                  {countDateObj.hours}
-                </span>
-                <span className="text-xs text-gray-500">Hours</span>
-              </div>
-              <div className="flex flex-col justify-center text-center">
-                <span className="text-sm tracking-tight bold text-gray-900 sm:text-2xl md:text-3xl font-mono">
-                  {countDateObj.minutes}
-                </span>
-                <span className="text-xs text-gray-500">Minutes</span>
-              </div>
-              <div className="flex flex-col justify-center text-center">
-                <span className="text-sm tracking-tight bold text-gray-900 sm:text-2xl md:text-3xl font-mono">
-                  {countDateObj.seconds}
-                </span>
-                <span className="text-xs text-gray-500">Seconds</span>
-              </div>
+        <div className="flex flex-col">
+          <div className="flex w-60 justify-evenly">
+            <div className="flex flex-col justify-center text-center">
+              <span className="text-xl tracking-tight bold text-gray-900 sm:text-2xl md:text-3xl font-mono">
+                {countDateObj?.days ?? 'X'}
+              </span>
+              <span className="text-xs text-gray-500">Days</span>
+            </div>
+            <div className="flex flex-col justify-center text-center">
+              <span className="text-xs tracking-tight bold text-gray-900 sm:text-2xl md:text-3xl font-mono">
+                {countDateObj?.hours ?? 'X'}
+              </span>
+              <span className="text-xs text-gray-500">Hours</span>
+            </div>
+            <div className="flex flex-col justify-center text-center">
+              <span className="text-sm tracking-tight bold text-gray-900 sm:text-2xl md:text-3xl font-mono">
+                {countDateObj?.minutes ?? 'X'}
+              </span>
+              <span className="text-xs text-gray-500">Minutes</span>
+            </div>
+            <div className="flex flex-col justify-center text-center">
+              <span className="text-sm tracking-tight bold text-gray-900 sm:text-2xl md:text-3xl font-mono">
+                {countDateObj?.seconds ?? 'X'}
+              </span>
+              <span className="text-xs text-gray-500">Seconds</span>
             </div>
           </div>
-        )}
+        </div>
       </div>
     </div>
-  ) : null;
+  );
 };
