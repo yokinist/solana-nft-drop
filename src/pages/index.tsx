@@ -13,7 +13,7 @@ const Page: React.VFC<Props> = ({}) => {
   return (
     <>
       <Hero>
-        {solana && walletAddress ? (
+        {walletAddress ? (
           // @ts-ignore
           <CandyMachine walletAddress={solana} />
         ) : (
