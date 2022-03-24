@@ -1,5 +1,6 @@
 // @ts-nocheck
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { InformationCircleIcon } from '@heroicons/react/solid';
 import { Connection } from '@metaplex/js';
 import * as anchor from '@project-serum/anchor';
 import { Program, Provider, web3 } from '@project-serum/anchor';
@@ -23,7 +24,8 @@ import {
   getNetworkToken,
   CIVIC,
 } from '@/libs/CandyMachine/helper';
-import { Button } from '@/shared';
+import { formatDate } from '@/libs/date';
+import { Spinner } from '@/shared';
 import { CandyMachineType } from '@/types';
 import { getSolanaSafety } from '@/utils/solana';
 
@@ -358,31 +360,61 @@ export const CandyMachine: React.VFC<Props> = ({ walletAddress }) => {
     getCandyMachineState();
   }, [getCandyMachineState]);
 
-  const renderDropTimer = () => {
-    if (!candyMachine?.state) return null;
+  const dropDate: Date | undefined = useMemo(() => {
+    if (!candyMachine?.state?.goLiveDate) return undefined;
+    return new Date(candyMachine.state.goLiveDate * 1000);
+  }, [candyMachine]);
+
+  const buttonState: 'soldOut' | 'waitMint' | 'mintNow' | undefined = useMemo(() => {
+    if (!candyMachine?.state || !dropDate) return undefined;
+    if (candyMachine.state.itemsRedeemed === candyMachine.state.itemsAvailable) return 'soldOut';
     const currentDate = new Date();
-    // ここでやっているのは UNIX 時間から Date オブジェクトへの変換
-    const dropDate = new Date(candyMachine.state.goLiveDate * 1000);
-    //ドロップ日よりも前の場合
-    if (currentDate < dropDate) {
-      console.info('Before drop date!');
-      // ドロップ日を返します
-      return <CountDown dropDate={dropDate} />;
-    }
+    if (currentDate < dropDate) return 'waitMint';
+    return 'mintNow';
+  }, [candyMachine, dropDate]);
 
-    // 条件に満たない場合はドロップ日のみを返します
-    return <p>{`Drop Date: ${candyMachine.state.goLiveDateTimeString}`}</p>;
-  };
-
-  return candyMachine?.state ? (
-    <div className="machine-container">
-      {renderDropTimer()}
-      <p>{`Items Minted: ${candyMachine.state.itemsRedeemed} / ${candyMachine.state.itemsAvailable}`}</p>
-      {candyMachine.state.itemsRedeemed === candyMachine.state.itemsAvailable ? (
-        <p>sold out</p>
-      ) : (
-        <Button onClick={mintToken}>Mint NFT</Button>
-      )}
+  return candyMachine?.state && buttonState ? (
+    <>
+      <div className="flex flex-col">
+        <div>
+          {buttonState === 'mintNow' && (
+            <div>
+              <button
+                className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10"
+                onClick={mintToken}
+              >
+                Mint NFT
+              </button>
+              <div className="text-left mt-4">
+                <span className="text-xl tracking-tight bold text-gray-900 sm:text-2xl md:text-3xl font-mono mr-2">
+                  {candyMachine.state.itemsRedeemed}/{candyMachine.state.itemsAvailable}
+                </span>
+                <span className="base text-gray-500 mb-2 text-sm">Minted</span>
+              </div>
+            </div>
+          )}
+          {buttonState === 'waitMint' && dropDate && (
+            <>
+              <CountDown dropDate={dropDate} />
+              <div className="rounded-md bg-blue-50 p-4 mt-4">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <InformationCircleIcon className="h-5 w-5 text-blue-400" aria-hidden="true" />
+                  </div>
+                  <div className="ml-3 flex-1 md:flex md:justify-between">
+                    <p className="text-sm text-blue-700">Drop Date: {formatDate(dropDate)} (JST)</p>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+          {buttonState === 'soldOut' && <p>sold out</p>}
+        </div>
+      </div>
+    </>
+  ) : (
+    <div className="mt-8 mx-auto">
+      <Spinner loading theme="default" />
     </div>
-  ) : null;
+  );
 };

@@ -17,9 +17,7 @@ export const useWallet = (): ReturnUseWallet => {
   const checkIfWalletIsConnected = useCallback(async () => {
     try {
       if (solana && solana.isPhantom) {
-        toast('Phantom wallet found');
         const response = await solana.connect({ onlyIfTrusted: true });
-
         console.info('Connected with Public Key:', response.publicKey.toString());
         const address = response.publicKey.toString();
         console.debug(address);

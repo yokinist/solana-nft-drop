@@ -3,31 +3,37 @@ import { useState, useEffect } from 'react';
 type Props = {
   dropDate: Date;
 };
-//
+
+type DateObj = {
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+};
+
 export const CountDown: React.VFC<Props> = ({ dropDate }) => {
-  // State
-  const [timerString, setTimerString] = useState('');
+  const [countDateObj, setCountDateObj] = useState<DateObj>();
 
   useEffect(() => {
-    console.info('Setting interval...');
+    if (!dropDate) return;
 
-    // setIntervalを使用して、このコードの一部を1秒ごとに実行します。
     const interval = setInterval(() => {
       const currentDate = new Date().getTime();
       const distance = dropDate.getTime() - currentDate;
-
-      // 時間の計算をするだけで、さまざまなプロパティを得ることができます
       const days = Math.floor(distance / (1000 * 60 * 60 * 24));
       const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-      // 得られた出力結果を設定します
-      setTimerString(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+      setCountDateObj({
+        days,
+        hours,
+        minutes,
+        seconds,
+      });
 
       // distanceが0になったらドロップタイムが来たことを示します
       if (distance < 0) {
-        console.info('Clearing interval...');
         clearInterval(interval);
       }
     }, 1000);
@@ -38,12 +44,43 @@ export const CountDown: React.VFC<Props> = ({ dropDate }) => {
         clearInterval(interval);
       }
     };
-  }, []);
+  }, [dropDate]);
 
-  return (
-    <div className="timer-container">
-      <p className="timer-header">Candy Drop Starting In</p>
-      {timerString && <p className="timer-value">{`⏰ ${timerString}`}</p>}
+  return countDateObj ? (
+    <div className="flex text-center">
+      <div className="border-2 rounded-lg px-3 py-3 border-gray-200 ">
+        <span className="base text-gray-500 text-center mb-2 text-sm">Drop starting in ...</span>
+        {countDateObj && (
+          <div className="flex flex-col">
+            <div className="flex w-60 justify-evenly">
+              <div className="flex flex-col justify-center text-center">
+                <span className="text-xl tracking-tight bold text-gray-900 sm:text-2xl md:text-3xl font-mono">
+                  {countDateObj.days}
+                </span>
+                <span className="text-xs text-gray-500">Days</span>
+              </div>
+              <div className="flex flex-col justify-center text-center">
+                <span className="text-xs tracking-tight bold text-gray-900 sm:text-2xl md:text-3xl font-mono">
+                  {countDateObj.hours}
+                </span>
+                <span className="text-xs text-gray-500">Hours</span>
+              </div>
+              <div className="flex flex-col justify-center text-center">
+                <span className="text-sm tracking-tight bold text-gray-900 sm:text-2xl md:text-3xl font-mono">
+                  {countDateObj.minutes}
+                </span>
+                <span className="text-xs text-gray-500">Minutes</span>
+              </div>
+              <div className="flex flex-col justify-center text-center">
+                <span className="text-sm tracking-tight bold text-gray-900 sm:text-2xl md:text-3xl font-mono">
+                  {countDateObj.seconds}
+                </span>
+                <span className="text-xs text-gray-500">Seconds</span>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
-  );
+  ) : null;
 };
