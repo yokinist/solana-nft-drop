@@ -1,12 +1,13 @@
 import { CandyMachine, Hero } from '@/components';
 import { useWallet } from '@/hooks';
+import { getSolanaSafety } from '@/utils/solana';
 
 type Props = {
   //
 };
 
 const Page: React.VFC<Props> = ({}) => {
-  const { solana } = window;
+  const solana = getSolanaSafety();
   const { walletAddress, connectWallet } = useWallet();
   return (
     <>

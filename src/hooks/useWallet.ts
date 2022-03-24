@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import { getSolanaSafety } from '@/utils/solana';
 
 type ReturnUseWallet = {
   walletAddress: string | undefined;
@@ -11,7 +12,7 @@ export const useWallet = (): ReturnUseWallet => {
 
   const checkIfWalletIsConnected = async () => {
     try {
-      const { solana } = window;
+      const solana = getSolanaSafety();
       if (!solana || !solana?.isPhantom) {
         toast('Solana object not found! Get a Phantom Wallet', { icon: '👻' });
         return;
@@ -26,7 +27,7 @@ export const useWallet = (): ReturnUseWallet => {
 
   const connectWallet = async () => {
     try {
-      const { solana } = window;
+      const solana = getSolanaSafety();
       if (!solana) return;
       const response = await solana.connect();
       setWalletAddress(response.publicKey.toString());
