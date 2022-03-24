@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { InformationCircleIcon } from '@heroicons/react/solid';
 import { Connection } from '@metaplex/js';
@@ -327,6 +326,7 @@ export const CandyMachine: React.VFC<Props> = ({ walletAddress }) => {
 
     // このデータをstateに追加してレンダリングする
     setCandyMachine({
+      // @ts-ignore
       id: CANDY_MACHINE_ID,
       program,
       state: {
@@ -344,7 +344,6 @@ export const CandyMachine: React.VFC<Props> = ({ walletAddress }) => {
               : itemsRedeemed < candyMachine.endSettings.number.toNumber()
             : true),
         isPresale: presale,
-        goLiveDate: candyMachine.data.goLiveDate,
         treasury: candyMachine.wallet,
         tokenMint: candyMachine.tokenMint,
         gatekeeper: candyMachine.data.gatekeeper,
