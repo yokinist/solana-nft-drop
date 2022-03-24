@@ -10,6 +10,8 @@ const Page: React.VFC<Props> = ({}) => {
   const solana = getSolanaSafety();
   const { walletAddress, connectWallet } = useWallet(solana);
 
+  console.debug({ solana });
+
   return (
     <>
       <Hero>
