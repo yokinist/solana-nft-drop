@@ -1,17 +1,21 @@
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { PhantomProvider } from '@/types';
 
 type ReturnUseWallet = {
   walletAddress: string | undefined;
   connectWallet: () => void;
 };
 
-export const useWallet = (solana: PhantomProvider | null): ReturnUseWallet => {
+export const useWallet = (): ReturnUseWallet => {
   const [walletAddress, setWalletAddress] = useState<string>();
 
-  const checkIfWalletIsConnected = async (solana: PhantomProvider) => {
+  const checkIfWalletIsConnected = async () => {
     try {
+      const { solana } = window;
+      if (!solana || !solana?.isPhantom) {
+        toast('Solana object not found! Get a Phantom Wallet', { icon: '👻' });
+        return;
+      }
       const response = await solana.connect({ onlyIfTrusted: true });
       const address = response.publicKey.toString();
       setWalletAddress(address);
@@ -22,22 +26,24 @@ export const useWallet = (solana: PhantomProvider | null): ReturnUseWallet => {
 
   const connectWallet = async () => {
     try {
+      const { solana } = window;
       if (!solana) return;
       const response = await solana.connect();
       setWalletAddress(response.publicKey.toString());
-      // something here
     } catch (error) {
       console.error(error);
     }
   };
 
   useEffect(() => {
-    if (!solana?.isPhantom) {
-      toast('Solana object not found! Get a Phantom Wallet', { icon: '👻' });
-    } else {
-      checkIfWalletIsConnected(solana);
-    }
-  }, [solana]);
+    const onLoad = async () => {
+      await checkIfWalletIsConnected();
+    };
+    window.addEventListener('load', onLoad);
+    return () => {
+      window.removeEventListener('load', onLoad);
+    };
+  }, []);
 
   return {
     walletAddress,
