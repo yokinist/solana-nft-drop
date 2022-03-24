@@ -4,7 +4,7 @@ import { PhantomProvider } from '@/types';
 
 type ReturnUseWallet = {
   walletAddress: string | undefined;
-  connectWallet: (solana: PhantomProvider | null) => void;
+  connectWallet: () => void;
 };
 
 export const useWallet = (solana: PhantomProvider | null): ReturnUseWallet => {
@@ -20,11 +20,10 @@ export const useWallet = (solana: PhantomProvider | null): ReturnUseWallet => {
     }
   };
 
-  const connectWallet = async (passedSolana: PhantomProvider | null) => {
+  const connectWallet = async () => {
     try {
-      console.debug({ passedSolana });
-      if (!passedSolana) return;
-      const response = await passedSolana.connect();
+      if (!solana) return;
+      const response = await solana.connect();
       setWalletAddress(response.publicKey.toString());
       // something here
     } catch (error) {
