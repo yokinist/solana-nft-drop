@@ -3,7 +3,7 @@ import { ja } from 'date-fns/locale';
 
 export const formatDate = (date?: Date): string => {
   if (!date) return '';
-  const formattedDate = format(date, 'yyyy/MM/dd - hh:mm', { locale: ja });
+  const formattedDate = format(date, 'yyyy/MM/dd - HH:mm', { locale: ja });
   return formattedDate;
 };
 
