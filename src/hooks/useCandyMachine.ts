@@ -285,7 +285,7 @@ export const useCandyMachine = ({ walletAddress }: Props): ReturnUseCandyMachine
         'Parallel',
         'processed',
       );
-      toast.success('Minted your crew! Congrats');
+      toast('Minted your crew!', { icon: '🎉' });
       setMinted(true);
       return res.txs.map((t) => t.txid);
     } catch (e) {
