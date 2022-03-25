@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import toast from 'react-hot-toast';
 import { Connection } from '@metaplex/js';
 import * as anchor from '@project-serum/anchor';
 import { Program, Provider, web3 } from '@project-serum/anchor';
@@ -37,6 +38,7 @@ type Props = {
 type ReturnUseCandyMachine = {
   candyMachine: CandyMachineType | undefined;
   minting: boolean;
+  minted: boolean;
   dropDate: Date | undefined;
   mintToken: () => void;
 };
@@ -44,6 +46,7 @@ type ReturnUseCandyMachine = {
 export const useCandyMachine = ({ walletAddress }: Props): ReturnUseCandyMachine => {
   const [candyMachine, setCandyMachine] = useState<CandyMachineType>();
   const [minting, setMinting] = useState<boolean>(false);
+  const [minted, setMinted] = useState<boolean>(false);
 
   const solana = getSolanaSafety();
 
@@ -274,16 +277,17 @@ export const useCandyMachine = ({ walletAddress }: Props): ReturnUseCandyMachine
     );
 
     try {
-      return (
-        await sendTransactions(
-          candyMachine.program.provider.connection,
-          candyMachine.program.provider.wallet,
-          [instructions, cleanupInstructions],
-          [signers, []],
-          'Parallel',
-          'processed',
-        )
-      ).txs.map((t) => t.txid);
+      const res = await sendTransactions(
+        candyMachine.program.provider.connection,
+        candyMachine.program.provider.wallet,
+        [instructions, cleanupInstructions],
+        [signers, []],
+        'Parallel',
+        'processed',
+      );
+      toast.success('Minted your crew! Congrats');
+      setMinted(true);
+      return res.txs.map((t) => t.txid);
     } catch (e) {
       console.error(e);
     } finally {
@@ -373,6 +377,7 @@ export const useCandyMachine = ({ walletAddress }: Props): ReturnUseCandyMachine
   return {
     candyMachine,
     minting,
+    minted,
     dropDate,
     mintToken,
   };

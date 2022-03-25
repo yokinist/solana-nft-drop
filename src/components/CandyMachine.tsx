@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { InformationCircleIcon } from '@heroicons/react/solid';
+import { XCircleIcon } from '@heroicons/react/solid';
 import { Signer } from '@solana/web3.js';
 import { CountDown } from '@/components';
 import { useCandyMachine } from '@/hooks';
@@ -11,7 +12,7 @@ type Props = {
 };
 
 export const CandyMachine: React.VFC<Props> = ({ walletAddress }) => {
-  const { candyMachine, minting, mintToken, dropDate } = useCandyMachine({ walletAddress });
+  const { candyMachine, minting, mintToken, minted, dropDate } = useCandyMachine({ walletAddress });
 
   const buttonState: 'soldOut' | 'waitMint' | 'mintNow' | undefined = useMemo(() => {
     if (!candyMachine?.state || !dropDate) return undefined;
@@ -27,8 +28,23 @@ export const CandyMachine: React.VFC<Props> = ({ walletAddress }) => {
         <div>
           {buttonState === 'mintNow' && (
             <div>
+              {minted && (
+                <>
+                  <div className="rounded-md bg-blue-50 p-4 mt-4">
+                    <div className="flex">
+                      <div className="flex-shrink-0">
+                        <InformationCircleIcon className="h-5 w-5 text-blue-400" aria-hidden="true" />
+                      </div>
+                      <div className="ml-3 flex-1 md:flex md:justify-between">
+                        <p className="text-sm text-blue-700">Minted: Please check your Phantom wallet</p>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="my-3 mx-auto text-center">- or -</p>
+                </>
+              )}
               <Button theme="primary" onClick={mintToken} inProgress={minting}>
-                Mint Your Crew
+                {minted ? 'More Mint Your Crew' : 'Mint Your Crew'}
               </Button>
               <div className="text-left mt-4">
                 <span className="text-xl tracking-tight bold text-gray-900 sm:text-2xl md:text-3xl font-mono mr-2">
@@ -53,7 +69,21 @@ export const CandyMachine: React.VFC<Props> = ({ walletAddress }) => {
               </div>
             </>
           )}
-          {buttonState === 'soldOut' && <p>sold out</p>}
+          {buttonState === 'soldOut' && (
+            <div className="rounded-md bg-red-50 p-4">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <XCircleIcon className="h-5 w-5 text-red-400" aria-hidden="true" />
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-red-800">Sold out</h3>
+                  <div className="mt-2 text-sm text-red-700">
+                    <p>Next drop: 2022/04/24 0:00 JST</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </>
