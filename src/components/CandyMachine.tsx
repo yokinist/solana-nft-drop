@@ -4,14 +4,14 @@ import { Signer } from '@solana/web3.js';
 import { CountDown } from '@/components';
 import { useCandyMachine } from '@/hooks';
 import { formatDate } from '@/libs/date';
-import { Spinner } from '@/shared';
+import { Button, Spinner } from '@/shared';
 
 type Props = {
   walletAddress: Signer;
 };
 
 export const CandyMachine: React.VFC<Props> = ({ walletAddress }) => {
-  const { candyMachine, mintToken, dropDate } = useCandyMachine({ walletAddress });
+  const { candyMachine, minting, mintToken, dropDate } = useCandyMachine({ walletAddress });
 
   const buttonState: 'soldOut' | 'waitMint' | 'mintNow' | undefined = useMemo(() => {
     if (!candyMachine?.state || !dropDate) return undefined;
@@ -27,12 +27,9 @@ export const CandyMachine: React.VFC<Props> = ({ walletAddress }) => {
         <div>
           {buttonState === 'mintNow' && (
             <div>
-              <button
-                className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10"
-                onClick={mintToken}
-              >
-                Mint NFT
-              </button>
+              <Button theme="primary" onClick={mintToken} inProgress={minting}>
+                Mint Your Crew
+              </Button>
               <div className="text-left mt-4">
                 <span className="text-xl tracking-tight bold text-gray-900 sm:text-2xl md:text-3xl font-mono mr-2">
                   {candyMachine.state.itemsRedeemed}/{candyMachine.state.itemsAvailable}

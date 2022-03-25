@@ -36,12 +36,14 @@ type Props = {
 
 type ReturnUseCandyMachine = {
   candyMachine: CandyMachineType | undefined;
+  minting: boolean;
   dropDate: Date | undefined;
   mintToken: () => void;
 };
 
 export const useCandyMachine = ({ walletAddress }: Props): ReturnUseCandyMachine => {
   const [candyMachine, setCandyMachine] = useState<CandyMachineType>();
+  const [minting, setMinting] = useState<boolean>(false);
 
   const solana = getSolanaSafety();
 
@@ -109,7 +111,7 @@ export const useCandyMachine = ({ walletAddress }: Props): ReturnUseCandyMachine
   const mintToken = async () => {
     const mint = web3.Keypair.generate();
     if (!mint || !candyMachine?.state) return;
-
+    setMinting(true);
     const userTokenAccountAddress: PublicKey = (await getAtaForMint(mint.publicKey, walletAddress.publicKey))[0];
 
     const userPayingAccountAddress: PublicKey = candyMachine.state.tokenMint
@@ -284,6 +286,8 @@ export const useCandyMachine = ({ walletAddress }: Props): ReturnUseCandyMachine
       ).txs.map((t) => t.txid);
     } catch (e) {
       console.error(e);
+    } finally {
+      setMinting(false);
     }
     return [];
   };
@@ -368,6 +372,7 @@ export const useCandyMachine = ({ walletAddress }: Props): ReturnUseCandyMachine
 
   return {
     candyMachine,
+    minting,
     dropDate,
     mintToken,
   };
