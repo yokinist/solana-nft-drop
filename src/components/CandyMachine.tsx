@@ -12,7 +12,7 @@ type Props = {
 };
 
 export const CandyMachine: React.VFC<Props> = ({ walletAddress }) => {
-  const { candyMachine, minting, mintToken, minted, dropDate } = useCandyMachine({ walletAddress });
+  const { candyMachine, minting, mintedCount, mintToken, dropDate } = useCandyMachine({ walletAddress });
 
   const buttonState: 'soldOut' | 'waitMint' | 'mintNow' | undefined = useMemo(() => {
     if (!candyMachine?.state || !dropDate) return undefined;
@@ -28,7 +28,7 @@ export const CandyMachine: React.VFC<Props> = ({ walletAddress }) => {
         <div>
           {buttonState === 'mintNow' && (
             <div>
-              {minted && (
+              {mintedCount > 0 && (
                 <>
                   <div className="rounded-md bg-blue-50 p-4 mt-4">
                     <div className="flex">
@@ -44,11 +44,11 @@ export const CandyMachine: React.VFC<Props> = ({ walletAddress }) => {
                 </>
               )}
               <Button theme="primary" onClick={mintToken} inProgress={minting}>
-                {minted ? 'More Mint Your Crew' : 'Mint Your Crew'}
+                {mintedCount > 0 ? 'More Mint Your Crew' : 'Mint Your Crew'}
               </Button>
               <div className="text-left mt-4">
                 <span className="text-xl tracking-tight bold text-gray-900 sm:text-2xl md:text-3xl font-mono mr-2">
-                  {candyMachine.state.itemsRedeemed}/{candyMachine.state.itemsAvailable}
+                  {candyMachine.state.itemsRedeemed + mintedCount}/{candyMachine.state.itemsAvailable}
                 </span>
                 <span className="base text-gray-500 mb-2 text-sm">Minted</span>
               </div>

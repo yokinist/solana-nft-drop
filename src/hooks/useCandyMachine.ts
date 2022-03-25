@@ -38,7 +38,7 @@ type Props = {
 type ReturnUseCandyMachine = {
   candyMachine: CandyMachineType | undefined;
   minting: boolean;
-  minted: boolean;
+  mintedCount: number;
   dropDate: Date | undefined;
   mintToken: () => void;
 };
@@ -46,7 +46,7 @@ type ReturnUseCandyMachine = {
 export const useCandyMachine = ({ walletAddress }: Props): ReturnUseCandyMachine => {
   const [candyMachine, setCandyMachine] = useState<CandyMachineType>();
   const [minting, setMinting] = useState<boolean>(false);
-  const [minted, setMinted] = useState<boolean>(false);
+  const [mintedCount, setMintedCount] = useState<number>(0);
 
   const solana = getSolanaSafety();
 
@@ -286,7 +286,7 @@ export const useCandyMachine = ({ walletAddress }: Props): ReturnUseCandyMachine
         'processed',
       );
       toast('Minted your crew!', { icon: '🎉' });
-      setMinted(true);
+      setMintedCount((prevCount) => prevCount + 1);
       return res.txs.map((t) => t.txid);
     } catch (e) {
       console.error(e);
@@ -377,7 +377,7 @@ export const useCandyMachine = ({ walletAddress }: Props): ReturnUseCandyMachine
   return {
     candyMachine,
     minting,
-    minted,
+    mintedCount,
     dropDate,
     mintToken,
   };
